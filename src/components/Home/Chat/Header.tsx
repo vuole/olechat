@@ -3,6 +3,7 @@ import Add from "../../../assets/images/add.png";
 import More from "../../../assets/images/more.png";
 import styled from "styled-components";
 import { HeaderWrapper } from "../Sidebar/Header";
+import { UserInfo } from "../../../containers/HomeSidebarContainer";
 
 const ChatIcons = styled.div`
   display: flex;
@@ -13,7 +14,7 @@ const ChatIcons = styled.div`
   }
 `;
 
-const Header = ({data}: any) => {
+const Header = ({ data }: { data: UserInfo }) => {
   return (
     <HeaderWrapper style={{ backgroundColor: "#5d5b8d", color: "lightgray" }}>
       <span>{data.displayName}</span>

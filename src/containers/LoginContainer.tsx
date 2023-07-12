@@ -14,10 +14,16 @@ const LoginContainer = () => {
 
   if (currentUser) return <Navigate to="/" />;
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+    const form = e.currentTarget;
+    const formElements = form.elements as typeof form.elements & {
+      email: HTMLInputElement;
+      password: HTMLInputElement;
+    };
+
+    const email = formElements.email.value;
+    const password = formElements.password.value;
 
     try {
       //Create user

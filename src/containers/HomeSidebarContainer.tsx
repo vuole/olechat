@@ -5,6 +5,7 @@ import { db } from "../firebase";
 import { useContext, useEffect, useState } from "react";
 import {
   DocumentData,
+  Timestamp,
   collection,
   doc,
   getDoc,
@@ -17,7 +18,7 @@ import {
   where,
 } from "firebase/firestore";
 import { AuthContext } from "../contexts/AuthContext";
-import Conversation from "../components/Home/Sidebar/Conversation";
+import Chat from "../components/Home/Sidebar/Chat";
 import { ChatContext } from "../contexts/ChatContext";
 
 const SidebarContainer = styled.div`
@@ -26,11 +27,27 @@ const SidebarContainer = styled.div`
   position: relative;
 `;
 
+interface ChatType {
+  date: Timestamp;
+  lastMessage: string;
+  userInfo: UserInfo;
+}
+
+export type UserInfo = Omit<UserType, "lowercaseDisplayName" | "email">;
+
+interface UserType {
+  displayName: string;
+  email: string;
+  lowercaseDisplayName: string;
+  photoURL: string;
+  uid: string;
+}
+
 const HomeSidebarContainer = () => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
-  const [searchResult, setSearchResult] = useState<DocumentData | null>(null); // a user
-  const [inbox, setInbox] = useState<any>([]);
+  const [searchResult, setSearchResult] = useState<UserType | null>(null); // a user
+  const [chats, setChats] = useState<Array<[string, ChatType]>>([]); //Array<[chatId, ChatType]>
   const { dispatch } = useContext(ChatContext);
 
   useEffect(() => {
@@ -38,7 +55,7 @@ const HomeSidebarContainer = () => {
       const unsub = onSnapshot(
         doc(db, "inbox", currentUser?.uid || ""),
         (doc) => {
-          setInbox(Object.entries(doc.data() || {}));
+          setChats(Object.entries(doc.data() || {}));
         }
       );
       return () => {
@@ -70,7 +87,7 @@ const HomeSidebarContainer = () => {
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
       console.log(doc.id, " => ", doc.data());
-      setSearchResult(doc.data());
+      setSearchResult(doc.data() as UserType);
     });
   };
 
@@ -99,7 +116,7 @@ const HomeSidebarContainer = () => {
           [combinedId + ".date"]: serverTimestamp(),
         });
 
-        await updateDoc(doc(db, "inbox", searchResult?.uid), {
+        await updateDoc(doc(db, "inbox", searchResult?.uid || ""), {
           [combinedId + ".userInfo"]: {
             uid: currentUser?.uid,
             displayName: currentUser?.displayName,
@@ -113,7 +130,8 @@ const HomeSidebarContainer = () => {
     setSearchResult(null);
   };
 
-  const handleClickConversation = (c: any) => {
+  // c: [chatId, ChatType]
+  const handleClickConversation = (c: [string, ChatType]) => {
     dispatch({ type: "CHANGE_USER", payload: c });
   };
 
@@ -126,12 +144,11 @@ const HomeSidebarContainer = () => {
         searchResult={searchResult}
         onClickSearchResult={handleClickSearchResult}
       />
-      {inbox
+      {chats
         .sort((a: any, b: any) => b[1].date - a[1].date)
-        .map((c: any) => (
-          <Conversation
+        .map((c) => (
+          <Chat
             key={c[0]}
-            hasLatestMessage={true}
             photoURL={c[1].userInfo.photoURL}
             displayName={c[1].userInfo.displayName}
             lastMessage={c[1].lastMessage}

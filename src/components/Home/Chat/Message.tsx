@@ -2,6 +2,7 @@ import { styled } from "styled-components";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { useContext } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
+import { MessageType } from "./Messages";
 
 const MessageWrappper = styled.div`
   display: flex;
@@ -53,7 +54,11 @@ const MessageContent = styled.div`
   }
 `;
 
-const Message = ({ message }: any) => {
+interface MessageProps {
+  message: MessageType;
+}
+
+const Message = ({ message }: MessageProps) => {
   const currenUser = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   const isCurrentUserChat = message.senderId == currenUser?.uid;
@@ -61,17 +66,18 @@ const Message = ({ message }: any) => {
     <MessageWrappper className={isCurrentUserChat ? "owner" : ""}>
       <MessageInfo>
         <img
-          src={isCurrentUserChat ? currenUser?.photoURL : data.user.photoURL}
+          src={
+            isCurrentUserChat ? currenUser?.photoURL || "" : data.user.photoURL
+          }
           alt="avatar"
         />
         <span>just now</span>
       </MessageInfo>
       <MessageContent className={isCurrentUserChat ? "owner" : ""}>
         {message.messageText && <p>{message.messageText}</p>}
-        {message.messagePhoto && <img
-          src={message.messagePhoto}
-          alt="message photo"
-        />}
+        {message.messagePhoto && (
+          <img src={message.messagePhoto} alt="message photo" />
+        )}
       </MessageContent>
     </MessageWrappper>
   );
