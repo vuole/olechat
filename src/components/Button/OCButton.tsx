@@ -1,9 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  children?: React.ReactNode;
-};
+// type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+//   children?: React.ReactNode;
+// };
 
 const Button = styled.button`
   width: 250px;
@@ -15,7 +15,7 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
-const OCButton = ({ children, ...props }: ButtonProps) => {
+const OCButton = ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
   return <Button {...props}>{children}</Button>;
 };
 

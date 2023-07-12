@@ -29,18 +29,18 @@ const Nav = styled.p`
   margin-top: 10px;
 `;
 
-const OCFormWrapper = ({ children, ...props }: any) => {
+interface FormWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
+  title: string;
+  navigate: string | React.ReactNode;
+  onSubmit(e: React.SyntheticEvent): Promise<void>;
+}
+
+const OCFormWrapper = ({ children, ...props }: FormWrapperProps) => {
   return (
     <FormWrapper>
       <Logo>Ole Chat</Logo>
       <Title>{props.title}</Title>
-      <Form
-        onSubmit={(e: any) => {
-          props.onSubmit(e);
-        }}
-      >
-        {children}
-      </Form>
+      <Form onSubmit={(e: React.SyntheticEvent<HTMLFormElement>) => props.onSubmit(e)}>{children}</Form>
       <Nav>{props.navigate}</Nav>
     </FormWrapper>
   );

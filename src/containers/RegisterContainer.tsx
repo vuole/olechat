@@ -16,17 +16,24 @@ const RegisterContainer = () => {
 
   if (currentUser) return <Navigate to="/" />;
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const displayName = e.target.displayName.value;
-    const email = e.target.email.value;
-    const password = e.target.password.value;
-    const file = e.target.file.files[0];
+    const form = e.currentTarget;
+    const formElements = form.elements as typeof form.elements & {
+      displayName: HTMLInputElement;
+      email: HTMLInputElement;
+      password: HTMLInputElement;
+      file: HTMLInputElement;
+    };
+
+    const displayName = formElements.displayName.value;
+    const email = formElements.email.value;
+    const password = formElements.password.value;
+    const file = (formElements.file.files || [])[0];
 
     try {
       //Create user
       const res = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(res.user);
 
       //Create a unique image name
       const date = new Date().getTime();
@@ -47,7 +54,7 @@ const RegisterContainer = () => {
           // Handle successful uploads on complete
           // For instance, get the download URL: https://firebasestorage.googleapis.com/...
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            
+
             //Update profile
             await updateProfile(res.user, {
               displayName,

@@ -29,6 +29,7 @@ const User = styled.div`
     object-fit: cover;
   }
   button {
+    padding: 5px;
     background-color: #5d5b8d;
     color: #ddddf7;
     font-size: 10px;

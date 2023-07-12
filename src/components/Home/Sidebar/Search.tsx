@@ -1,5 +1,6 @@
 import { styled } from "styled-components";
-import Conversation from "./Conversation";
+import Chat from "./Chat";
+import { DocumentData } from "firebase/firestore";
 
 const SearchContainer = styled.div`
   border-bottom: 1px solid gray;
@@ -19,12 +20,19 @@ const SearchForm = styled.div`
   }
 `;
 
+interface SearchProps{
+  value: string;
+  onChange: React.Dispatch<React.SetStateAction<string>>;
+  searchResult: DocumentData | null;
+  onClickSearchResult(): Promise<void>;
+}
+
 const Search = ({
   value,
   onChange,
   searchResult,
   onClickSearchResult,
-}: any) => {
+}: SearchProps) => {
   return (
     <SearchContainer>
       <SearchForm>
@@ -41,9 +49,8 @@ const Search = ({
         </span>
       )}
       {searchResult && (
-        <Conversation
-          hasLatestMessage={false}
-          person={searchResult}
+        <Chat
+          hasLastMessage={false}
           photoURL={searchResult.photoURL}
           displayName={searchResult.displayName}
           onClick={onClickSearchResult}

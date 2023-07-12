@@ -55,31 +55,23 @@ const Send = styled.div`
   }
 `;
 
-const InputBox = ({}: any) => {
+const InputBox = () => {
   const [messageText, setMessageText] = useState("");
-  const [messagePhoto, setMessagePhoto] = useState(null);
+  const [messagePhoto, setMessagePhoto] = useState<File | null>(null);
   const { data } = useContext(ChatContext);
   const currentUser = useContext(AuthContext);
 
-  const handleSentMessage = async (e: any) => {
+  const handleSentMessage = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key == "Enter" && (messageText != "" || messagePhoto != null)) {
       if (messagePhoto) {
         const storageRef = ref(storage, uuid());
         const uploadTask = uploadBytesResumable(storageRef, messagePhoto);
 
-        // Register three observers:
-        // 1. 'state_changed' observer, called any time the state changes
-        // 2. Error observer, called on failure
-        // 3. Completion observer, called on successful completion
         uploadTask.on(
           "state_changed",
           (snapshot) => {},
-          (error) => {
-            // setHasError(true);
-          },
+          (error) => {},
           () => {
-            // Handle successful uploads on complete
-            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
             getDownloadURL(uploadTask.snapshot.ref).then(
               async (downloadURL) => {
                 await updateDoc(doc(db, "chats", data.chatId), {
@@ -139,12 +131,12 @@ const InputBox = ({}: any) => {
           type="file"
           style={{ display: "none" }}
           id="file"
-          onChange={(e: any) => setMessagePhoto(e.target.files[0])}
+          onChange={(e) => setMessagePhoto((e.target.files || [])[0])}
         />
         <label htmlFor="file">
           <img src={Img} alt="" />
         </label>
-        <button onClick={() => handleSentMessage({ key: "Enter" })}>
+        <button onClick={() => handleSentMessage({ key: "Enter" } as React.KeyboardEvent<HTMLInputElement>)}>
           Send
         </button>
       </Send>

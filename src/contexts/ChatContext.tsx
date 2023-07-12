@@ -1,6 +1,7 @@
 import { createContext, useReducer } from "react";
+import { UserInfo } from "../containers/HomeSidebarContainer";
 
-export const ChatContext = createContext<any>({});
+export const ChatContext = createContext<ChatContextType>({} as ChatContextType);
 
 export const ChatProvider = ({ children }: any) => {
   const [state, dispatch] = useReducer(chatReducer, INITIAL_STATE);
@@ -11,7 +12,7 @@ export const ChatProvider = ({ children }: any) => {
   );
 };
 
-const chatReducer = (state: any, action: any) => {
+const chatReducer = (state: ChatUser, action: any) => {
   switch (action.type) {
     case "CHANGE_USER":
       return {
@@ -27,7 +28,17 @@ const chatReducer = (state: any, action: any) => {
   }
 };
 
-const INITIAL_STATE = {
+const INITIAL_STATE: ChatUser = {
   chatId: "",
-  user: {},
+  user: {} as UserInfo,
 };
+
+interface ChatUser {
+  chatId: string;
+  user: UserInfo;
+}
+
+interface ChatContextType {
+  data: ChatUser,
+  dispatch: React.Dispatch<any>
+}

@@ -29,7 +29,15 @@ const UserChatInfo = styled.div`
   }
 `;
 
-const Conversation = ({ hasLatestMessage, photoURL, displayName, lastMessage, onClick }: any) => {
+interface ChatProps{
+  hasLastMessage?: boolean;
+  photoURL: string;
+  displayName: string;
+  lastMessage?: string;
+  onClick(): Promise<void> | void;
+}
+
+const Chat = ({ hasLastMessage = true, photoURL, displayName, lastMessage, onClick }: ChatProps) => {
   return (
     <UserChat
       onClick={() => {
@@ -39,10 +47,10 @@ const Conversation = ({ hasLatestMessage, photoURL, displayName, lastMessage, on
       <img src={photoURL} alt="avatar" />
       <UserChatInfo>
         <span>{displayName}</span>
-        {hasLatestMessage && <p>{lastMessage}</p>}
+        {hasLastMessage && <p>{lastMessage}</p>}
       </UserChatInfo>
     </UserChat>
   );
 };
 
-export default Conversation;
+export default Chat;

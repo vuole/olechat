@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import Message from "./Message";
 import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
-import { doc, onSnapshot } from "firebase/firestore";
+import { Timestamp, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebase";
 
 const MessagesWrapper = styled.div`
@@ -27,8 +27,16 @@ const MessagesWrapper = styled.div`
   }
 `;
 
+export interface MessageType {
+  date: Timestamp;
+  id: string;
+  messageText: string;
+  messagePhoto?: string;
+  senderId: string;
+}
+
 const Messages = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Array<MessageType>>([]);
   const { data } = useContext(ChatContext);
 
   useEffect(() => {
@@ -44,7 +52,7 @@ const Messages = () => {
   console.log(messages);
   return (
     <MessagesWrapper>
-      {messages.map((m: any) => (
+      {messages.map((m) => (
         <Message message={m} key={m.id} />
       ))}
     </MessagesWrapper>
