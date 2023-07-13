@@ -19,9 +19,9 @@ const Header = ({ data }: { data: UserInfo }) => {
     <HeaderWrapper style={{ backgroundColor: "#5d5b8d", color: "lightgray" }}>
       <span>{data.displayName}</span>
       <ChatIcons>
-        <img src={Cam} alt="" />
+        {/* <img src={Cam} alt="" />
         <img src={Add} alt="" />
-        <img src={More} alt="" />
+        <img src={More} alt="" /> */}
       </ChatIcons>
     </HeaderWrapper>
   );

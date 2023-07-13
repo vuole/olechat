@@ -74,9 +74,9 @@ const Message = ({ message }: MessageProps) => {
         <span>just now</span>
       </MessageInfo>
       <MessageContent className={isCurrentUserChat ? "owner" : ""}>
-        {message.messageText && <p>{message.messageText}</p>}
-        {message.messagePhoto && (
-          <img src={message.messagePhoto} alt="message photo" />
+        {message.textMessage && <p>{message.textMessage}</p>}
+        {message.photoMessage && (
+          <img src={message.photoMessage} alt="message photo" />
         )}
       </MessageContent>
     </MessageWrappper>

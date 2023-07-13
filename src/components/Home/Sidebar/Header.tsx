@@ -50,7 +50,7 @@ const Header = () => {
         <button
           onClick={() => {
             signOut(auth);
-            dispatch({ type: "DELETE_USER", payload: [] });
+            dispatch({ type: "DELETED_USER", payload: [] });
           }}
         >
           Logout
