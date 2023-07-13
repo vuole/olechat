@@ -6,9 +6,10 @@ import { Timestamp, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebase";
 
 const MessagesWrapper = styled.div`
+  flex: 1;
   background-color: #ddddf7;
   padding: 10px;
-  height: calc(100% - 100px);
+  height: calc(100% - 199px);
   overflow-y: overlay;
   overflow-x: hidden;
   &::-webkit-scrollbar {
@@ -30,8 +31,8 @@ const MessagesWrapper = styled.div`
 export interface MessageType {
   date: Timestamp;
   id: string;
-  messageText: string;
-  messagePhoto?: string;
+  textMessage: string;
+  photoMessage?: string;
   senderId: string;
 }
 
@@ -40,7 +41,7 @@ const Messages = () => {
   const { data } = useContext(ChatContext);
 
   useEffect(() => {
-    const unSub = onSnapshot(doc(db, "chats", data.chatId), (doc) => {
+    const unSub = onSnapshot(doc(db, "conversations", data.chatId), (doc) => {
       doc.exists() && setMessages(doc.data().messages);
     });
 
@@ -49,7 +50,6 @@ const Messages = () => {
     };
   }, [data.chatId]);
 
-  console.log(messages);
   return (
     <MessagesWrapper>
       {messages.map((m) => (

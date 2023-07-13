@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import Chat from "./Chat";
-import { DocumentData } from "firebase/firestore";
+import { UserType } from "../../../containers/HomeSidebarContainer";
 
 const SearchContainer = styled.div`
   border-bottom: 1px solid gray;
@@ -23,7 +23,7 @@ const SearchForm = styled.div`
 interface SearchProps{
   value: string;
   onChange: React.Dispatch<React.SetStateAction<string>>;
-  searchResult: DocumentData | null;
+  searchResult: UserType | null;
   onClickSearchResult(): Promise<void>;
 }
 
@@ -32,7 +32,7 @@ const Search = ({
   onChange,
   searchResult,
   onClickSearchResult,
-}: SearchProps) => {
+}: SearchProps) => { 
   return (
     <SearchContainer>
       <SearchForm>
@@ -48,11 +48,11 @@ const Search = ({
           User not found!
         </span>
       )}
-      {searchResult && (
+      {Object.keys(searchResult || {}).length > 0 && (
         <Chat
           hasLastMessage={false}
-          photoURL={searchResult.photoURL}
-          displayName={searchResult.displayName}
+          photoURL={searchResult?.photoURL || ""}
+          displayName={searchResult?.displayName || ""}
           onClick={onClickSearchResult}
         />
       )}

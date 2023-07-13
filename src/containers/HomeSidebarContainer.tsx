@@ -4,7 +4,6 @@ import Search from "../components/Home/Sidebar/Search";
 import { db } from "../firebase";
 import { useContext, useEffect, useState } from "react";
 import {
-  DocumentData,
   Timestamp,
   collection,
   doc,
@@ -20,6 +19,7 @@ import {
 import { AuthContext } from "../contexts/AuthContext";
 import Chat from "../components/Home/Sidebar/Chat";
 import { ChatContext } from "../contexts/ChatContext";
+import { result } from "lodash";
 
 const SidebarContainer = styled.div`
   flex: 1;
@@ -35,7 +35,7 @@ interface ChatType {
 
 export type UserInfo = Omit<UserType, "lowercaseDisplayName" | "email">;
 
-interface UserType {
+export interface UserType {
   displayName: string;
   email: string;
   lowercaseDisplayName: string;
@@ -46,14 +46,16 @@ interface UserType {
 const HomeSidebarContainer = () => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
-  const [searchResult, setSearchResult] = useState<UserType | null>(null); // a user
+  const [searchResult, setSearchResult] = useState<UserType | null>(
+    {} as UserType
+  ); // a user
   const [chats, setChats] = useState<Array<[string, ChatType]>>([]); //Array<[chatId, ChatType]>
   const { dispatch } = useContext(ChatContext);
 
   useEffect(() => {
     const getChats = () => {
       const unsub = onSnapshot(
-        doc(db, "inbox", currentUser?.uid || ""),
+        doc(db, "userChats", currentUser?.uid || ""),
         (doc) => {
           setChats(Object.entries(doc.data() || {}));
         }
@@ -82,7 +84,7 @@ const HomeSidebarContainer = () => {
 
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
-      setSearchResult(null);
+      setSearchResult(keyword ? null : {} as UserType);
     }
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
@@ -100,14 +102,14 @@ const HomeSidebarContainer = () => {
         : "";
 
     try {
-      const res = await getDoc(doc(db, "chats", combinedId));
+      const res = await getDoc(doc(db, "conversations", combinedId));
 
       if (!res.exists()) {
-        //create a chat in chats collection
-        await setDoc(doc(db, "chats", combinedId), { messages: [] });
+        //create a chat in conversations collection
+        await setDoc(doc(db, "conversations", combinedId), { messages: [] });
 
         //create user chats
-        await updateDoc(doc(db, "inbox", currentUser?.uid || ""), {
+        await updateDoc(doc(db, "userChats", currentUser?.uid || ""), {
           [combinedId + ".userInfo"]: {
             uid: searchResult?.uid,
             displayName: searchResult?.displayName,
@@ -116,7 +118,7 @@ const HomeSidebarContainer = () => {
           [combinedId + ".date"]: serverTimestamp(),
         });
 
-        await updateDoc(doc(db, "inbox", searchResult?.uid || ""), {
+        await updateDoc(doc(db, "userChats", searchResult?.uid || ""), {
           [combinedId + ".userInfo"]: {
             uid: currentUser?.uid,
             displayName: currentUser?.displayName,
@@ -126,13 +128,24 @@ const HomeSidebarContainer = () => {
         });
       }
     } catch (err) {}
+    const userChat = [
+      combinedId,
+      {
+        userInfo: {
+          displayName: searchResult?.displayName,
+          photoURL: searchResult?.photoURL,
+          uid: searchResult?.uid,
+        },
+      },
+    ];
+    dispatch({ type: "CHANGED_USER", payload: userChat });
     setKeyword("");
-    setSearchResult(null);
+    setSearchResult({} as UserType);
   };
 
   // c: [chatId, ChatType]
-  const handleClickConversation = (c: [string, ChatType]) => {
-    dispatch({ type: "CHANGE_USER", payload: c });
+  const handleClickChat = (c: [string, ChatType]) => {
+    dispatch({ type: "CHANGED_USER", payload: c });
   };
 
   return (
@@ -149,10 +162,11 @@ const HomeSidebarContainer = () => {
         .map((c) => (
           <Chat
             key={c[0]}
+            chatId={c[0]}
             photoURL={c[1].userInfo.photoURL}
             displayName={c[1].userInfo.displayName}
             lastMessage={c[1].lastMessage}
-            onClick={() => handleClickConversation(c)}
+            onClick={() => handleClickChat(c)}
           />
         ))}
     </SidebarContainer>

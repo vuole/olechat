@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import { ChatContext } from "../../../contexts/ChatContext";
+import { useContext } from "react";
 
 const UserChat = styled.div`
   padding: 10px;
@@ -7,6 +9,9 @@ const UserChat = styled.div`
   gap: 10px;
   color: white;
   cursor: pointer;
+  &.selected {
+    background-color: #2f2d52;
+  }
   &:hover {
     background-color: #2f2d52;
   }
@@ -29,25 +34,47 @@ const UserChatInfo = styled.div`
   }
 `;
 
-interface ChatProps{
+interface ChatProps {
   hasLastMessage?: boolean;
+  chatId?: string;
   photoURL: string;
   displayName: string;
   lastMessage?: string;
   onClick(): Promise<void> | void;
 }
 
-const Chat = ({ hasLastMessage = true, photoURL, displayName, lastMessage, onClick }: ChatProps) => {
+const Chat = ({
+  hasLastMessage = true,
+  chatId = "",
+  photoURL,
+  displayName,
+  lastMessage,
+  onClick,
+}: ChatProps) => {
+  const { data } = useContext(ChatContext);
+  const textMessage = data.messages[chatId]?.textMessage;
+  const photoMessage = data.messages[chatId]?.photoMessage;
+
   return (
     <UserChat
       onClick={() => {
         onClick();
       }}
+      className={data.chatId == chatId ? "selected" : ""}
     >
       <img src={photoURL} alt="avatar" />
       <UserChatInfo>
         <span>{displayName}</span>
-        {hasLastMessage && <p>{lastMessage}</p>}
+        {hasLastMessage && (
+          <p>
+            {(textMessage || photoMessage) &&
+            data.chatId != chatId
+              ? photoMessage
+                ? `a photo [unsent]`
+                : `${textMessage} [unsent]`
+              : lastMessage}
+          </p>
+        )}
       </UserChatInfo>
     </UserChat>
   );
