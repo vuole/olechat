@@ -5,6 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ChatProvider } from "./contexts/ChatContext";
+import { ConversationProvider } from "./contexts/ConversationContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -12,9 +13,11 @@ const root = ReactDOM.createRoot(
 root.render(
   <AuthProvider>
     <ChatProvider>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
+      <ConversationProvider>
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      </ConversationProvider>
     </ChatProvider>
   </AuthProvider>
 );

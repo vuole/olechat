@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { AuthContext } from "../../../contexts/AuthContext";
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
 import { MessageType } from "./Messages";
 
@@ -61,9 +61,15 @@ interface MessageProps {
 const Message = ({ message }: MessageProps) => {
   const currenUser = useContext(AuthContext);
   const { data } = useContext(ChatContext);
+  const ref = useRef<HTMLDivElement>(null);
   const isCurrentUserChat = message.senderId == currenUser?.uid;
+
+  useEffect(() => {
+    ref.current?.scrollIntoView({ behavior: "smooth" });
+  }, [message]);
+
   return (
-    <MessageWrappper className={isCurrentUserChat ? "owner" : ""}>
+    <MessageWrappper ref={ref} className={isCurrentUserChat ? "owner" : ""}>
       <MessageInfo>
         <img
           src={

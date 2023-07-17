@@ -20,7 +20,14 @@ const chatReducer = (state: ChatUser, action: any) => {
       return {
         ...state,
         user: action.payload[1].userInfo,
+        lastMessage: action.payload[1].lastMessage,
         chatId: action.payload[0],
+      };
+
+    case "IS_SEEN":
+      return {
+        ...state,
+        lastMessage: { ...state.lastMessage, isSeen: true },
       };
 
     case "DELETED_USER":
@@ -52,15 +59,24 @@ const chatReducer = (state: ChatUser, action: any) => {
 const INITIAL_STATE: ChatUser = {
   chatId: "",
   user: {} as UserInfo,
+  lastMessage: {} as LastMessageType,
   messages: {},
 };
 
 interface ChatUser {
   chatId: string;
   user: UserInfo;
+  lastMessage: LastMessageType;
   messages: {
     [field: string]: { textMessage: string; photoMessage: File | null };
   };
+}
+
+export interface LastMessageType {
+  lastMessage: string;
+  senderId: string;
+  isSeen: boolean;
+  id: string;
 }
 
 interface ChatContextType {

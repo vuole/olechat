@@ -36,17 +36,38 @@ export interface MessageType {
   senderId: string;
 }
 
+export function playSound() {
+  const audio = new Audio(
+    "https://firebasestorage.googleapis.com/v0/b/olechat-f8ab7.appspot.com/o/c9adaa31-6c29-4e6f-8a76-d79d8cd0892e?alt=media&token=3a818b56-4422-4cee-b46f-8723407645e9"
+  );
+  const play = audio.play();
+  if (play !== undefined) {
+    play
+      .then((_) => {
+        audio.play();
+      })
+      .catch((error) => {
+        console.log("error audio");
+        audio.pause();
+      });
+  }
+}
+
 const Messages = () => {
   const [messages, setMessages] = useState<Array<MessageType>>([]);
   const { data } = useContext(ChatContext);
 
   useEffect(() => {
+    //lắng nghe thay đổi của conversation đang chọn và lấy về dữ liệu mới
     const unSub = onSnapshot(doc(db, "conversations", data.chatId), (doc) => {
       doc.exists() && setMessages(doc.data().messages);
     });
 
     return () => {
       unSub();
+      //khi chuyển qua lại giữa các chat thì không hiển thị tin nhắn của conversation trước đó
+      //trong lúc chờ fetch conversation mới
+      setMessages([]);
     };
   }, [data.chatId]);
 

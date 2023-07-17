@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Attach from "../../../assets/images/attach.png";
 import Img from "../../../assets/images/img.png";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Timestamp,
   arrayUnion,
@@ -14,6 +14,7 @@ import { db, storage } from "../../../firebase";
 import { ChatContext } from "../../../contexts/ChatContext";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { ConversationContext } from "../../../contexts/ConversationContext";
 
 const InputWrapper = styled.div`
   display: flex;
@@ -94,12 +95,51 @@ const InputBox = () => {
   const textMessage = data.messages[data.chatId]?.textMessage;
   const photoMessage = data.messages[data.chatId]?.photoMessage;
   const [preview, setPreview] = useState<string | undefined>();
+  // const messageInput = useRef<HTMLInputElement>(null);
+  const { conversationDispatch } = useContext(ConversationContext);
+
+  const updateMessages = async (
+    messageId: string,
+    sendingTime: Date,
+    downloadURL?: string
+  ) => {
+    const message = {
+      id: messageId,
+      textMessage: textMessage || "",
+      senderId: currentUser?.uid,
+      date: sendingTime,
+    };
+    await updateDoc(doc(db, "conversations", data.chatId), {
+      messages: arrayUnion(
+        downloadURL ? { ...message, photoMessage: downloadURL } : message
+      ),
+    });
+  };
+
+  const updateUserChats = async (
+    userChatId: string,
+    messageId: string,
+    isSeen: boolean,
+    sendingTime: Date
+  ) => {
+    await updateDoc(doc(db, "userChats", userChatId), {
+      [data.chatId + ".lastMessage"]: {
+        lastMessage: photoMessage ? "sent a photo" : textMessage,
+        senderId: currentUser?.uid,
+        isSeen: isSeen,
+        id: messageId,
+      },
+      [data.chatId + ".date"]: sendingTime,
+    });
+  };
 
   const handleSentMessage = async (
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key == "Enter" && (textMessage || photoMessage)) {
       dispatch({ type: "SENT_MESSAGE" });
+      const messageId = uuid();
+      const sendingTime = new Date();
       if (photoMessage) {
         const storageRef = ref(storage, uuid());
         const uploadTask = uploadBytesResumable(storageRef, photoMessage);
@@ -111,43 +151,19 @@ const InputBox = () => {
           () => {
             getDownloadURL(uploadTask.snapshot.ref).then(
               async (downloadURL) => {
-                await updateDoc(doc(db, "conversations", data.chatId), {
-                  messages: arrayUnion({
-                    id: uuid(),
-                    textMessage: textMessage || "",
-                    senderId: currentUser?.uid,
-                    date: Timestamp.now(),
-                    photoMessage: downloadURL,
-                  }),
-                });
+                updateMessages(messageId, sendingTime, downloadURL);
               }
             );
           }
         );
       } else {
-        await updateDoc(doc(db, "conversations", data.chatId), {
-          messages: arrayUnion({
-            id: uuid(),
-            textMessage,
-            senderId: currentUser?.uid,
-            date: Timestamp.now(),
-          }),
-        });
+        updateMessages(messageId, sendingTime);
       }
 
-      await updateDoc(doc(db, "userChats", currentUser?.uid || ""), {
-        [data.chatId + ".lastMessage"]: photoMessage
-          ? "sent a photo"
-          : textMessage,
-        [data.chatId + ".date"]: serverTimestamp(),
-      });
-
-      await updateDoc(doc(db, "userChats", data.user.uid), {
-        [data.chatId + ".lastMessage"]: photoMessage
-          ? "sent a photo"
-          : textMessage,
-        [data.chatId + ".date"]: serverTimestamp(),
-      });
+      //cập nhật thông tin nhắn cuối cùng trong userchats để hiển thị lên sidebar
+      updateUserChats(currentUser?.uid || "", messageId, true, sendingTime);
+      updateUserChats(data.user.uid, messageId, false, sendingTime);
+      // console.log("1", document.activeElement === messageInput.current);
     }
   };
 
@@ -195,6 +211,20 @@ const InputBox = () => {
             dispatch({
               type: "EDITED_MESSAGE",
               payload: { textMessage: e.target.value, photoMessage },
+            });
+          }}
+          // ref={messageInput}
+          onFocus={(e) => {
+            dispatch({ type: "IS_SEEN" });
+            conversationDispatch({
+              type: "CHANGED_FOCUS_FOCUS",
+              payload: true,
+            });
+          }}
+          onBlur={(e) => {
+            conversationDispatch({
+              type: "CHANGED_FOCUS_FOCUS",
+              payload: false,
             });
           }}
         />
