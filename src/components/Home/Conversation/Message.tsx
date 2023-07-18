@@ -1,12 +1,13 @@
 import { styled } from "styled-components";
 import { AuthContext } from "../../../contexts/AuthContext";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useMemo, useRef } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
 import { MessageType } from "./Messages";
+import Moment from "react-moment";
 
 const MessageWrappper = styled.div`
   display: flex;
-  gap: 20px;
+  gap: 5px;
   margin-bottom: 20px;
   &.owner {
     flex-direction: row-reverse;
@@ -18,6 +19,12 @@ const MessageInfo = styled.div`
   flex-direction: column;
   color: gray;
   font-weight: 300;
+  font-size: 12px;
+  width: 71px;
+
+  &.owner {
+    align-items: flex-end;
+  }
 
   img {
     width: 40px;
@@ -62,7 +69,10 @@ const Message = ({ message }: MessageProps) => {
   const currenUser = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   const ref = useRef<HTMLDivElement>(null);
-  const isCurrentUserChat = message.senderId == currenUser?.uid;
+
+  const isCurrentUserChat = useMemo(() => {
+    return message.senderId == currenUser?.uid;
+  }, [message, currenUser]);
 
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,14 +80,16 @@ const Message = ({ message }: MessageProps) => {
 
   return (
     <MessageWrappper ref={ref} className={isCurrentUserChat ? "owner" : ""}>
-      <MessageInfo>
+      <MessageInfo className={isCurrentUserChat ? "owner" : ""}>
         <img
           src={
             isCurrentUserChat ? currenUser?.photoURL || "" : data.user.photoURL
           }
           alt="avatar"
         />
-        <span>just now</span>
+        <Moment fromNow ago interval={60000}>
+          {message.date.seconds * 1000}
+        </Moment>
       </MessageInfo>
       <MessageContent className={isCurrentUserChat ? "owner" : ""}>
         {message.textMessage && <p>{message.textMessage}</p>}

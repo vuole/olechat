@@ -74,7 +74,7 @@ const HomeSidebarContainer = () => {
         (doc) => {
           const userChats = Object.entries(doc.data() || {}).sort(
             (a: any, b: any) => b[1].date - a[1].date
-          );         
+          );
           setChats(userChats);
         }
       );
@@ -129,7 +129,7 @@ const HomeSidebarContainer = () => {
         displayName: userInfo?.displayName,
         photoURL: userInfo?.photoURL,
       },
-      [combinedId + ".date"]: serverTimestamp(),
+      [combinedId + ".date"]: Timestamp.now(),
     });
   };
   const handleClickSearchResult = async () => {
@@ -155,6 +155,7 @@ const HomeSidebarContainer = () => {
           photoURL: searchResult?.photoURL,
           uid: searchResult?.uid,
         },
+        lastMessage: {} as LastMessageType,
       },
     ];
     //dispatch để mở cuộc hội thoại với người dùng được tìm thấy trên UI

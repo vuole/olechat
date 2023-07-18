@@ -81,7 +81,7 @@ const Chat = ({
           </p>
         )}
       </UserChatInfo>
-      {!lastMessage?.isSeen && (
+      {!lastMessage?.isSeen && hasLastMessage && (
         <FontAwesomeIcon
           icon={faCircle}
           size="xs"

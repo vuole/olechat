@@ -100,14 +100,13 @@ const InputBox = () => {
 
   const updateMessages = async (
     messageId: string,
-    sendingTime: Date,
     downloadURL?: string
   ) => {
     const message = {
       id: messageId,
       textMessage: textMessage || "",
       senderId: currentUser?.uid,
-      date: sendingTime,
+      date: Timestamp.now(),
     };
     await updateDoc(doc(db, "conversations", data.chatId), {
       messages: arrayUnion(
@@ -119,8 +118,7 @@ const InputBox = () => {
   const updateUserChats = async (
     userChatId: string,
     messageId: string,
-    isSeen: boolean,
-    sendingTime: Date
+    isSeen: boolean
   ) => {
     await updateDoc(doc(db, "userChats", userChatId), {
       [data.chatId + ".lastMessage"]: {
@@ -129,7 +127,7 @@ const InputBox = () => {
         isSeen: isSeen,
         id: messageId,
       },
-      [data.chatId + ".date"]: sendingTime,
+      [data.chatId + ".date"]: Timestamp.now(),
     });
   };
 
@@ -139,7 +137,6 @@ const InputBox = () => {
     if (e.key == "Enter" && (textMessage || photoMessage)) {
       dispatch({ type: "SENT_MESSAGE" });
       const messageId = uuid();
-      const sendingTime = new Date();
       if (photoMessage) {
         const storageRef = ref(storage, uuid());
         const uploadTask = uploadBytesResumable(storageRef, photoMessage);
@@ -151,18 +148,18 @@ const InputBox = () => {
           () => {
             getDownloadURL(uploadTask.snapshot.ref).then(
               async (downloadURL) => {
-                updateMessages(messageId, sendingTime, downloadURL);
+                updateMessages(messageId, downloadURL);
               }
             );
           }
         );
       } else {
-        updateMessages(messageId, sendingTime);
+        updateMessages(messageId);
       }
 
       //cập nhật thông tin nhắn cuối cùng trong userchats để hiển thị lên sidebar
-      updateUserChats(currentUser?.uid || "", messageId, true, sendingTime);
-      updateUserChats(data.user.uid, messageId, false, sendingTime);
+      updateUserChats(currentUser?.uid || "", messageId, true);
+      updateUserChats(data.user.uid, messageId, false);
       // console.log("1", document.activeElement === messageInput.current);
     }
   };
