@@ -4,6 +4,7 @@ import { useContext, useEffect, useMemo, useRef } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
 import { MessageType } from "./Messages";
 import Moment from "react-moment";
+import ModalImage from "react-modal-image";
 
 const MessageWrappper = styled.div`
   display: flex;
@@ -56,7 +57,14 @@ const MessageContent = styled.div`
     }
   }
 
-  img {
+  //Thẻ div này bọc thẻ img (là ảnh nhỏ có class.small-photo-message) trong ModalImage
+  div {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .small-photo-message {
     width: 50%;
   }
 `;
@@ -68,18 +76,18 @@ interface MessageProps {
 const Message = ({ message }: MessageProps) => {
   const currenUser = useContext(AuthContext);
   const { data } = useContext(ChatContext);
-  const ref = useRef<HTMLDivElement>(null);
+  const messageWrappperRef = useRef<HTMLDivElement>(null);
 
   const isCurrentUserChat = useMemo(() => {
     return message.senderId == currenUser?.uid;
   }, [message, currenUser]);
 
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    messageWrappperRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
   }, [message]);
 
   return (
-    <MessageWrappper ref={ref} className={isCurrentUserChat ? "owner" : ""}>
+    <MessageWrappper ref={messageWrappperRef} className={isCurrentUserChat ? "owner" : ""}>
       <MessageInfo className={isCurrentUserChat ? "owner" : ""}>
         <img
           src={
@@ -94,7 +102,14 @@ const Message = ({ message }: MessageProps) => {
       <MessageContent className={isCurrentUserChat ? "owner" : ""}>
         {message.textMessage && <p>{message.textMessage}</p>}
         {message.photoMessage && (
-          <img src={message.photoMessage} alt="message photo" />
+          <ModalImage
+            className="small-photo-message"
+            small={message.photoMessage}
+            large={message.photoMessage}
+            hideDownload={true}
+            showRotate={true}
+            alt="Ole Chat"
+          />
         )}
       </MessageContent>
     </MessageWrappper>
