@@ -4,6 +4,7 @@ import { auth } from "../../../firebase";
 import { useContext } from "react";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { ChatContext } from "../../../contexts/ChatContext";
+import { updateOnlineStatus } from "../../../pages/HomePage";
 
 export const HeaderWrapper = styled.div`
   height: 50px;
@@ -48,7 +49,8 @@ const Header = () => {
         <img src={currentUser?.photoURL || undefined} alt="Avatar" />
         <span>{currentUser?.displayName}</span>
         <button
-          onClick={() => {
+          onClick={async () => {
+            updateOnlineStatus(currentUser?.uid || "", "offline");
             signOut(auth);
             dispatch({ type: "DELETED_USER", payload: [] });
           }}

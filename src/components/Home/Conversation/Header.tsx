@@ -4,6 +4,11 @@ import More from "../../../assets/images/more.png";
 import styled from "styled-components";
 import { HeaderWrapper } from "../Sidebar/Header";
 import { UserInfo } from "../../../containers/HomeSidebarContainer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircle as solidFaCircle } from "@fortawesome/free-solid-svg-icons";
+import { Timestamp } from "firebase/firestore";
+import { useContext, useEffect } from "react";
+import { ConversationContext } from "../../../contexts/ConversationContext";
 
 const ChatIcons = styled.div`
   display: flex;
@@ -14,10 +19,52 @@ const ChatIcons = styled.div`
   }
 `;
 
+export interface OnlineStatusType {
+  state: "online" | "offline";
+  lastChanged: Timestamp;
+}
+
 const Header = ({ data }: { data: UserInfo }) => {
+  const { conversation, conversationDispatch } =
+    useContext(ConversationContext);
+
+  useEffect(() => {
+    return () => {
+      conversationDispatch({
+        type: "UPDATE_ONLINE_STATUS",
+        payload: {},
+      });
+    };
+  }, [data]); 
+
   return (
     <HeaderWrapper style={{ backgroundColor: "#5d5b8d", color: "lightgray" }}>
-      <span>{data.displayName}</span>
+      <span
+        style={{
+          display: "flex",
+          gap: "3px",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <a href="#" style={{ color: "lightgray", textDecoration: "none" }}>
+          {data.displayName}
+        </a>
+        {conversation.onlineStatus.state && (
+          <FontAwesomeIcon
+            icon={solidFaCircle}
+            size="xs"
+            style={{
+              color:
+                conversation.onlineStatus.state === "online"
+                  ? "#00ff00"
+                  : "#c0c0c0",
+              width: "10px",
+              height: "10px",
+            }}
+          />
+        )}
+      </span>
       <ChatIcons>
         {/* <img src={Cam} alt="" />
         <img src={Add} alt="" />

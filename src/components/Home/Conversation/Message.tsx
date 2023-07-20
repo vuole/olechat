@@ -75,7 +75,7 @@ const Message = ({ message }: MessageProps) => {
   }, [message, currenUser]);
 
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "smooth" });
+    ref.current?.scrollIntoView({ behavior: "auto", block: "end" });
   }, [message]);
 
   return (

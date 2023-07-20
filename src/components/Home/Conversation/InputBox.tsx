@@ -15,12 +15,16 @@ import { ChatContext } from "../../../contexts/ChatContext";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { ConversationContext } from "../../../contexts/ConversationContext";
+import Picker from "@emoji-mart/react";
+import emojiMartData from "@emoji-mart/data";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFaceSmile } from "@fortawesome/free-regular-svg-icons";
 
 const InputWrapper = styled.div`
   display: flex;
   flex-direction: column;
   background-color: white;
-  padding: 10px;
+  position: relative;
 `;
 
 const Preview = styled.div`
@@ -29,12 +33,13 @@ const Preview = styled.div`
     width: 80px;
     height: 80px;
     object-fit: contain;
+    margin: 10px 0 0 5px;
   }
 
   span {
     position: absolute;
-    top: -8px;
-    left: -3px;
+    top: 0;
+    left: 3px;
     width: 20px;
     height: 20px;
     text-align: center;
@@ -52,7 +57,7 @@ const Preview = styled.div`
 const Input = styled.div`
   height: auto;
   background-color: white;
-  padding: 10px 0;
+  padding: 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,7 +67,7 @@ const Input = styled.div`
     border: none;
     outline: none;
     color: #2f2d52;
-    font-size: 18px;
+    font-size: 16px;
 
     &::placeholder {
       color: lightgray;
@@ -92,16 +97,14 @@ const Send = styled.div`
 const InputBox = () => {
   const currentUser = useContext(AuthContext);
   const { data, dispatch } = useContext(ChatContext);
-  const textMessage = data.messages[data.chatId]?.textMessage;
+  const textMessage = data.messages[data.chatId]?.textMessage || "";
   const photoMessage = data.messages[data.chatId]?.photoMessage;
   const [preview, setPreview] = useState<string | undefined>();
-  // const messageInput = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
   const { conversationDispatch } = useContext(ConversationContext);
+  const [showEmojis, setShowEmojis] = useState(false);
 
-  const updateMessages = async (
-    messageId: string,
-    downloadURL?: string
-  ) => {
+  const updateMessages = async (messageId: string, downloadURL?: string) => {
     const message = {
       id: messageId,
       textMessage: textMessage || "",
@@ -165,20 +168,82 @@ const InputBox = () => {
   };
 
   useEffect(() => {
+    messageInputRef.current?.focus();
+  }, [data]);
+
+  const handlePastePhoto = (e: ClipboardEvent) => {
+    const pastedPhotoFile = e.clipboardData?.files[0];
+    if (
+      pastedPhotoFile &&
+      (pastedPhotoFile.type === "image/png" ||
+        pastedPhotoFile.type === "image/jpeg")
+    ) {
+      dispatch({
+        type: "EDITED_MESSAGE",
+        payload: {
+          textMessage,
+          photoMessage: e.clipboardData?.files[0],
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    //lắng nghe mỗi khi người dùng paste data vào ô nhập tin nhắn thì gọi hàm xử lý
+    //để chỉ lấy ra file ảnh
+    messageInputRef.current?.addEventListener("paste", handlePastePhoto);
+
     if (!photoMessage) {
       setPreview(undefined);
       return;
     }
-
+    //tạo một blob image để có thể xem trước file ảnh đã chọn hoặc paste
     const objectUrl = URL.createObjectURL(photoMessage);
     setPreview(objectUrl);
 
     // free memory when ever this component is unmounted
-    return () => URL.revokeObjectURL(objectUrl);
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+      messageInputRef.current?.removeEventListener("paste", handlePastePhoto);
+    };
   }, [photoMessage]);
+
+  const addEmoji = (e: any) => {
+    let sym = e.unified.split("-");
+    let codesArray: any[] = [];
+    sym.forEach((el: any) => codesArray.push("0x" + el));
+    let emoji = String.fromCodePoint(...codesArray);
+    dispatch({
+      type: "EDITED_MESSAGE",
+      payload: {
+        textMessage: textMessage + emoji,
+        photoMessage: photoMessage,
+      },
+    });
+  };
 
   return (
     <InputWrapper>
+      {showEmojis && (
+        <div
+          style={{
+            position: "absolute",
+            right: "120px",
+            zIndex: 1000,
+            bottom: "35px",
+          }}
+        >
+          <Picker
+            data={emojiMartData}
+            onEmojiSelect={addEmoji}
+            onClickOutside={(e: any) => {
+              setShowEmojis(false);
+            }}
+            navPosition="bottom"
+            previewPosition="none"
+          />
+        </div>
+      )}
       {preview && (
         <Preview>
           <img src={preview} alt="previewPhoto" />
@@ -201,7 +266,7 @@ const InputBox = () => {
       <Input>
         <input
           type="text"
-          placeholder="Type something..."
+          placeholder="Aa"
           value={(textMessage as string) || ""}
           onKeyUp={(e) => handleSentMessage(e)}
           onChange={(e) => {
@@ -210,7 +275,7 @@ const InputBox = () => {
               payload: { textMessage: e.target.value, photoMessage },
             });
           }}
-          // ref={messageInput}
+          ref={messageInputRef}
           onFocus={(e) => {
             dispatch({ type: "IS_SEEN" });
             conversationDispatch({
@@ -227,6 +292,22 @@ const InputBox = () => {
         />
         <Send>
           {/* <img src={Attach} alt="attach" /> */}
+          <span
+            onClick={(event) => {
+              event.stopPropagation();
+              setShowEmojis(!showEmojis);
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faFaceSmile}
+              size="lg"
+              style={{
+                color: "#b3b6bd",
+                marginBottom: "2px",
+                cursor: "pointer",
+              }}
+            />
+          </span>
           <input
             type="file"
             accept="image/png, image/jpeg"

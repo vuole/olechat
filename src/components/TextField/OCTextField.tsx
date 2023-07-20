@@ -29,7 +29,7 @@ const Label = styled.label`
 const OCTextField = (props: React.InputHTMLAttributes<HTMLInputElement>) => {
   return (
     <>
-      <TextField {...props} id={props.type == "file" ? "file" : ""} />
+      <TextField {...props} id={props.type == "file" ? "file" : undefined} />
       {props.type == "file" && (
         <Label htmlFor="file">
           <img src={Add} alt="" />

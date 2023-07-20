@@ -64,8 +64,7 @@ const HomeSidebarContainer = () => {
   ); // a user
   const [chats, setChats] = useState<Array<[string, ChatType]>>([]); //Array<[chatId, ChatType]>
   const { data, dispatch } = useContext(ChatContext);
-  const { conversation } = useContext(ConversationContext);
-  const [isForeground, setIsForeground] = useState(true);
+  const { conversation, conversationDispatch } = useContext(ConversationContext);
 
   useEffect(() => {
     const getChats = () => {
@@ -201,8 +200,11 @@ const HomeSidebarContainer = () => {
     }
   }, [chats, data, conversation]);
 
-  const visibilityChange = () => {
-    setIsForeground(!document.hidden);
+  const visibilityChange = () => {   
+    conversationDispatch({
+      type: "UPDATE_IS_FOREGROUND",
+      payload: !document.hidden,
+    });
   };
   useEffect(() => {
     //Thay đổi web page's title khi đang duyệt trang khác mà có tin nhắn đến
@@ -210,7 +212,7 @@ const HomeSidebarContainer = () => {
     if (
       chats.length &&
       !chats[0][1].lastMessage?.isSeen &&
-      !isForeground &&
+      !conversation.isForeground &&
       cachedMessageId !== chats[0][1].lastMessage?.id
     ) {
       titleInterval = setInterval(flashTitle, 1500, pageTitle, newTitle);
@@ -224,7 +226,7 @@ const HomeSidebarContainer = () => {
       document.removeEventListener("visibilitychange", visibilityChange);
       clearInterval(titleInterval);
     };
-  }, [isForeground, chats]);
+  }, [chats, conversation.isForeground]);
 
   useEffect(() => {
     //phát âm thông báo khi có tin nhắn đến
@@ -248,6 +250,7 @@ const HomeSidebarContainer = () => {
           chatId={c[0]}
           photoURL={c[1].userInfo.photoURL}
           displayName={c[1].userInfo.displayName}
+          userChatId={c[1].userInfo.uid}
           lastMessage={c[1]?.lastMessage}
           onClick={() => handleClickChat(c)}
         />

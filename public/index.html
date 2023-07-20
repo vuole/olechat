@@ -39,5 +39,22 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script>
+      localStorage.openpages = Date.now();
+      window.addEventListener(
+        "storage",
+        function (e) {
+          if (e.key == "openpages") {
+            localStorage.page_available = Date.now();
+          }
+          if (e.key == "page_available") {
+            alert("One more page already open. Close this page?");
+            const win = window.open("about:blank", "_self");
+            win.close();
+          } 
+        },
+        false
+      );
+    </script>
   </body>
 </html>

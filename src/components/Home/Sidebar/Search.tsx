@@ -53,6 +53,7 @@ const Search = ({
           hasLastMessage={false}
           photoURL={searchResult?.photoURL || ""}
           displayName={searchResult?.displayName || ""}
+          userChatId={searchResult?.uid || ""}
           onClick={onClickSearchResult}
         />
       )}

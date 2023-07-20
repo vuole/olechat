@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, storage, db } from "../firebase.js";
 import { useContext, useState } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
+import { Timestamp, doc, setDoc } from "firebase/firestore";
 import { AuthContext } from "../contexts/AuthContext";
 
 const RegisterContainer = () => {
@@ -54,24 +54,34 @@ const RegisterContainer = () => {
           // Handle successful uploads on complete
           // For instance, get the download URL: https://firebasestorage.googleapis.com/...
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            try {
+              //Update profile
+              await updateProfile(res.user, {
+                displayName,
+                photoURL: downloadURL,
+              });
 
-            //Update profile
-            await updateProfile(res.user, {
-              displayName,
-              photoURL: downloadURL,
-            });
+              // Add a new document in collection "users"
+              await setDoc(doc(db, "users", res.user.uid), {
+                uid: res.user.uid,
+                displayName,
+                lowercaseDisplayName: displayName.toLowerCase(),
+                email,
+                photoURL: downloadURL,
+              });
 
-            // Add a new document in collection "users"
-            await setDoc(doc(db, "users", res.user.uid), {
-              uid: res.user.uid,
-              displayName,
-              lowercaseDisplayName: displayName.toLowerCase(),
-              email,
-              photoURL: downloadURL,
-            });
+              //create empty user chats on firestore
+              await setDoc(doc(db, "userChats", res.user.uid), {});
 
-            //create empty user chats on firestore
-            await setDoc(doc(db, "userChats", res.user.uid), {});
+              //Add a new document in collection "activeStatus"
+              await setDoc(doc(db, "onlineStatus", res.user.uid), {
+                state: "online",
+                lastChanged: Timestamp.now(),
+              });
+            } catch (err) {
+              console.log(err);
+            }
+            //Chuyển đến trang Home
             navigate("/");
           });
         }

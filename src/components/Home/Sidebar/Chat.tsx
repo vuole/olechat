@@ -1,8 +1,12 @@
 import styled from "styled-components";
 import { ChatContext, LastMessageType } from "../../../contexts/ChatContext";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { OnlineStatusType } from "../Conversation/Header";
+import { faCircle as solidFaCircle } from "@fortawesome/free-solid-svg-icons";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../../../firebase";
+import { ConversationContext } from "../../../contexts/ConversationContext";
 
 const UserChat = styled.div`
   padding: 10px;
@@ -16,6 +20,16 @@ const UserChat = styled.div`
   }
   &:hover {
     background-color: #2f2d52;
+  }
+  .avatar-user-chats {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    .online-status-icon {
+      position: absolute;
+      right: 5px;
+      bottom: 0;
+    }
   }
   img {
     width: 50px;
@@ -45,6 +59,7 @@ interface ChatProps {
   chatId?: string;
   photoURL: string;
   displayName: string;
+  userChatId: string;
   lastMessage?: LastMessageType;
   onClick(): Promise<void> | void;
 }
@@ -54,12 +69,35 @@ const Chat = ({
   chatId = "",
   photoURL,
   displayName,
+  userChatId,
   lastMessage,
   onClick,
 }: ChatProps) => {
   const { data } = useContext(ChatContext);
   const textMessage = data.messages[chatId]?.textMessage;
   const photoMessage = data.messages[chatId]?.photoMessage;
+  const [onlineStatus, setOnlineStatus] = useState<OnlineStatusType>(
+    {} as OnlineStatusType
+  );
+  const { conversation, conversationDispatch } = useContext(ConversationContext);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "onlineStatus", userChatId), (doc) => {
+      setOnlineStatus((doc.data() || {}) as OnlineStatusType);
+    });
+    return () => {
+      unsub();
+    };
+  }, [data, userChatId]);
+
+  useEffect(() => {
+    if (data.user.uid === userChatId) {
+      conversationDispatch({
+        type: "UPDATE_ONLINE_STATUS",
+        payload: onlineStatus,
+      });
+    }
+  }, [onlineStatus, conversation.onlineStatus]);
 
   return (
     <UserChat
@@ -68,7 +106,19 @@ const Chat = ({
       }}
       className={data.chatId == chatId ? "selected" : ""}
     >
-      <img src={photoURL} alt="avatar" />
+      <span className="avatar-user-chats">
+        <img src={photoURL} alt="avatar" />
+        <FontAwesomeIcon
+          icon={solidFaCircle}
+          size="xs"
+          style={{
+            color: onlineStatus.state === "online" ? "#00ff00" : "#c0c0c0",
+            width: "10px",
+            height: "10px",
+          }}
+          className="online-status-icon"
+        />
+      </span>
       <UserChatInfo>
         <span>{displayName}</span>
         {hasLastMessage && (
@@ -83,7 +133,7 @@ const Chat = ({
       </UserChatInfo>
       {!lastMessage?.isSeen && hasLastMessage && (
         <FontAwesomeIcon
-          icon={faCircle}
+          icon={solidFaCircle}
           size="xs"
           style={{ color: "#2e88ff" }}
         />
