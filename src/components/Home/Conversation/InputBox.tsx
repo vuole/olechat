@@ -19,6 +19,8 @@ import Picker from "@emoji-mart/react";
 import emojiMartData from "@emoji-mart/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFaceSmile } from "@fortawesome/free-regular-svg-icons";
+import { useWindowSize } from "../../../core/hooks/useWindowSize";
+import { WIDTH } from "../../../pages/HomePage";
 
 const InputWrapper = styled.div`
   display: flex;
@@ -94,6 +96,17 @@ const Send = styled.div`
   }
 `;
 
+const EmojiPickerWrapper = styled.div`
+  position: absolute;
+  right: 120px;
+  z-index: 1000;
+  bottom: 35px;
+  &.is-mobile {
+    right: 10px;
+    bottom: 45px;
+  }
+`;
+
 const InputBox = () => {
   const currentUser = useContext(AuthContext);
   const { data, dispatch } = useContext(ChatContext);
@@ -103,6 +116,7 @@ const InputBox = () => {
   const messageInputRef = useRef<HTMLInputElement>(null);
   const { conversationDispatch } = useContext(ConversationContext);
   const [showEmojis, setShowEmojis] = useState(false);
+  const { width } = useWindowSize();
 
   const updateMessages = async (messageId: string, downloadURL?: string) => {
     const message = {
@@ -225,14 +239,7 @@ const InputBox = () => {
   return (
     <InputWrapper>
       {showEmojis && (
-        <div
-          style={{
-            position: "absolute",
-            right: "120px",
-            zIndex: 1000,
-            bottom: "35px",
-          }}
-        >
+        <EmojiPickerWrapper className={width <= WIDTH ? "is-mobile" : ""}>
           <Picker
             data={emojiMartData}
             onEmojiSelect={addEmoji}
@@ -242,8 +249,9 @@ const InputBox = () => {
             navPosition="bottom"
             previewPosition="none"
           />
-        </div>
+        </EmojiPickerWrapper>
       )}
+
       {preview && (
         <Preview>
           <img src={preview} alt="previewPhoto" />

@@ -27,6 +27,9 @@ const SidebarContainer = styled.div`
   flex: 1;
   background-color: #3e3c61;
   position: relative;
+  &.none {
+    display: none;
+  }
 `;
 
 interface ChatType {
@@ -56,7 +59,11 @@ function flashTitle(pageTitle: string, newTitle: string) {
     : (document.title = pageTitle);
 }
 
-const HomeSidebarContainer = () => {
+interface HomeSidebarContainerProps {
+  isDisplaySidebar: boolean;
+}
+
+const HomeSidebarContainer = ({ isDisplaySidebar }: HomeSidebarContainerProps) => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
   const [searchResult, setSearchResult] = useState<UserType | null>(
@@ -64,7 +71,8 @@ const HomeSidebarContainer = () => {
   ); // a user
   const [chats, setChats] = useState<Array<[string, ChatType]>>([]); //Array<[chatId, ChatType]>
   const { data, dispatch } = useContext(ChatContext);
-  const { conversation, conversationDispatch } = useContext(ConversationContext);
+  const { conversation, conversationDispatch } =
+    useContext(ConversationContext);
 
   useEffect(() => {
     const getChats = () => {
@@ -200,7 +208,7 @@ const HomeSidebarContainer = () => {
     }
   }, [chats, data, conversation]);
 
-  const visibilityChange = () => {   
+  const visibilityChange = () => {
     conversationDispatch({
       type: "UPDATE_IS_FOREGROUND",
       payload: !document.hidden,
@@ -236,7 +244,7 @@ const HomeSidebarContainer = () => {
   }, [chats]);
 
   return (
-    <SidebarContainer>
+    <SidebarContainer className={!isDisplaySidebar ? "none" : ""}>
       <Header />
       <Search
         value={keyword}

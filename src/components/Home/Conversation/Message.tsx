@@ -73,21 +73,39 @@ interface MessageProps {
   message: MessageType;
 }
 
+// let t: any = null;
+
 const Message = ({ message }: MessageProps) => {
   const currenUser = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   const messageWrappperRef = useRef<HTMLDivElement>(null);
+  const photoMessageRef = useRef<HTMLDivElement>(null);
 
   const isCurrentUserChat = useMemo(() => {
     return message.senderId == currenUser?.uid;
   }, [message, currenUser]);
 
   useEffect(() => {
-    messageWrappperRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-  }, [message]);
+    messageWrappperRef.current?.scrollIntoView({
+      behavior: "auto",
+      block: "end",
+    });
+    // t = setTimeout(() => {
+    //   messageWrappperRef.current?.scrollIntoView({
+    //     behavior: "auto",
+    //     block: "end",
+    //   });
+    // }, 1500); // Adjust wait time as needed
+    return () => {
+      // clearTimeout(t);
+    };
+  }, []);
 
   return (
-    <MessageWrappper ref={messageWrappperRef} className={isCurrentUserChat ? "owner" : ""}>
+    <MessageWrappper
+      ref={messageWrappperRef}
+      className={isCurrentUserChat ? "owner" : ""}
+    >
       <MessageInfo className={isCurrentUserChat ? "owner" : ""}>
         <img
           src={
@@ -102,14 +120,16 @@ const Message = ({ message }: MessageProps) => {
       <MessageContent className={isCurrentUserChat ? "owner" : ""}>
         {message.textMessage && <p>{message.textMessage}</p>}
         {message.photoMessage && (
-          <ModalImage
-            className="small-photo-message"
-            small={message.photoMessage}
-            large={message.photoMessage}
-            hideDownload={true}
-            showRotate={true}
-            alt="Ole Chat"
-          />
+          <div ref={photoMessageRef}>
+            <ModalImage
+              className="small-photo-message"
+              small={message.photoMessage}
+              large={message.photoMessage}
+              hideDownload={true}
+              showRotate={true}
+              alt="Ole Chat"
+            />
+          </div>
         )}
       </MessageContent>
     </MessageWrappper>

@@ -5,10 +5,13 @@ import styled from "styled-components";
 import { HeaderWrapper } from "../Sidebar/Header";
 import { UserInfo } from "../../../containers/HomeSidebarContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle as solidFaCircle } from "@fortawesome/free-solid-svg-icons";
+import {faArrowLeft, faCircle as solidFaCircle } from "@fortawesome/free-solid-svg-icons";
 import { Timestamp } from "firebase/firestore";
 import { useContext, useEffect } from "react";
 import { ConversationContext } from "../../../contexts/ConversationContext";
+import { useWindowSize } from "../../../core/hooks/useWindowSize";
+import { ChatContext } from "../../../contexts/ChatContext";
+import { WIDTH } from "../../../pages/HomePage";
 
 const ChatIcons = styled.div`
   display: flex;
@@ -27,6 +30,8 @@ export interface OnlineStatusType {
 const Header = ({ data }: { data: UserInfo }) => {
   const { conversation, conversationDispatch } =
     useContext(ConversationContext);
+  const { dispatch } = useContext(ChatContext);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     return () => {
@@ -35,7 +40,7 @@ const Header = ({ data }: { data: UserInfo }) => {
         payload: {},
       });
     };
-  }, [data]); 
+  }, [data]);
 
   return (
     <HeaderWrapper style={{ backgroundColor: "#5d5b8d", color: "lightgray" }}>
@@ -47,6 +52,16 @@ const Header = ({ data }: { data: UserInfo }) => {
           alignItems: "center",
         }}
       >
+        {width <= WIDTH && (
+          <FontAwesomeIcon
+            onClick={() => {
+              dispatch({ type: "DELETED_USER" });
+            }}
+            icon={faArrowLeft}
+            size="sm"
+            style={{ marginRight: "8px", cursor: "pointer" }}
+          />
+        )}
         <a href="#" style={{ color: "lightgray", textDecoration: "none" }}>
           {data.displayName}
         </a>

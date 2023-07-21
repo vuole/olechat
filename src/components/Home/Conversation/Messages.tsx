@@ -4,6 +4,8 @@ import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../../../contexts/ChatContext";
 import { Timestamp, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebase";
+import { useWindowSize } from "../../../core/hooks/useWindowSize";
+import { WIDTH } from "../../../pages/HomePage";
 
 const MessagesWrapper = styled.div`
   flex: 1;
@@ -15,6 +17,10 @@ const MessagesWrapper = styled.div`
   &::-webkit-scrollbar {
     width: 8px;
   }
+
+  /* &.hidden-scroll::-webkit-scrollbar {
+    width: 0px;
+  } */
 
   &::-webkit-scrollbar-thumb {
     background-color: #5d5b8d;
@@ -56,6 +62,7 @@ export function playSound() {
 const Messages = () => {
   const [messages, setMessages] = useState<Array<MessageType>>([]);
   const { data } = useContext(ChatContext);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     //lắng nghe thay đổi của conversation đang chọn và lấy về dữ liệu mới
@@ -72,7 +79,7 @@ const Messages = () => {
   }, [data.chatId]);
 
   return (
-    <MessagesWrapper>
+    <MessagesWrapper className={width <= WIDTH ? "hidden-scroll" : ""}>
       {messages.map((m) => (
         <Message message={m} key={m.id} />
       ))}
