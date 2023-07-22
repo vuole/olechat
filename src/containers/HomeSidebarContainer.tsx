@@ -27,13 +27,13 @@ import { WIDTH } from "../pages/HomePage";
 const SidebarContainer = styled.div`
   flex: 1;
   background-color: #3e3c61;
-  &.sidebar-ismobile {
+  /* &.sidebar-ismobile {
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
     width: 100vw;
-  }
+  } */
   &.none {
     display: none;
   }

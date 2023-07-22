@@ -10,13 +10,13 @@ const ChatContainer = styled.div`
   flex: 2;
   display: flex;
   flex-direction: column;
-  &.conversation-ismobile{
+  /* &.conversation-ismobile{
     position: fixed;
     top: 0;
     right: 0;
     height: 100vh;
     width: 100vw;
-  }
+  } */
   &.no-chat {
     display: flex;
     justify-content: center;

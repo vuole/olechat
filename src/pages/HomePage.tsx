@@ -23,12 +23,12 @@ const HomeWrapper = styled.div`
   width: 65%;
   height: 80%;
   display: flex;
-  overflow: hidden;
-  /* &.full-view {
-    width: 100%;
-    height: 100%;
+  /* overflow: hidden; */
+  &.full-view {
+    height: 80%;
+    width: 90%;
     border-radius: 0;
-  } */
+  }
 `;
 
 export const WIDTH = 768;
