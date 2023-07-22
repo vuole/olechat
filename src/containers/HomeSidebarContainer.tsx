@@ -22,11 +22,18 @@ import { ChatContext, LastMessageType } from "../contexts/ChatContext";
 import { playSound } from "../components/Home/Conversation/Messages";
 import { ConversationContext } from "../contexts/ConversationContext";
 import { User } from "firebase/auth";
+import { WIDTH } from "../pages/HomePage";
 
 const SidebarContainer = styled.div`
   flex: 1;
   background-color: #3e3c61;
-  position: relative;
+  &.sidebar-ismobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+  }
   &.none {
     display: none;
   }
@@ -61,10 +68,12 @@ function flashTitle(pageTitle: string, newTitle: string) {
 
 interface HomeSidebarContainerProps {
   isDisplaySidebar: boolean;
+  windowWidth: number;
 }
 
 const HomeSidebarContainer = ({
   isDisplaySidebar,
+  windowWidth,
 }: HomeSidebarContainerProps) => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
@@ -246,8 +255,11 @@ const HomeSidebarContainer = ({
     }
   }, [chats]);
 
+  const none = !isDisplaySidebar ? "none" : "";
+  const sidebarIsMobile = windowWidth <= WIDTH ? "sidebar-ismobile" : "";
+
   return (
-    <SidebarContainer className={!isDisplaySidebar ? "none" : ""}>
+    <SidebarContainer className={`${none} ${sidebarIsMobile}`}>
       <Header />
       <Search
         value={keyword}

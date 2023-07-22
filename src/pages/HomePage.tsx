@@ -24,11 +24,11 @@ const HomeWrapper = styled.div`
   height: 80%;
   display: flex;
   overflow: hidden;
-  &.full-view {
+  /* &.full-view {
     width: 100%;
     height: 100%;
     border-radius: 0;
-  }
+  } */
 `;
 
 export const WIDTH = 768;
@@ -53,6 +53,7 @@ const HomePage = () => {
   const currentUser = useContext(AuthContext);
   const { conversation } = useContext(ConversationContext);
   const { data } = useContext(ChatContext);
+
   const userId = useMemo(() => {
     return currentUser?.uid || "";
   }, [currentUser?.uid]);
@@ -75,7 +76,10 @@ const HomePage = () => {
   return (
     <HomeContainer>
       <HomeWrapper className={width <= WIDTH ? "full-view" : ""}>
-        <HomeSidebarContainer isDisplaySidebar={isDisplaySidebar} />
+        <HomeSidebarContainer
+          isDisplaySidebar={isDisplaySidebar}
+          windowWidth={width}
+        />
         <HomeChatContainer windowWidth={width} />
       </HomeWrapper>
     </HomeContainer>

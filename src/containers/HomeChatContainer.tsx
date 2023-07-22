@@ -10,6 +10,13 @@ const ChatContainer = styled.div`
   flex: 2;
   display: flex;
   flex-direction: column;
+  &.conversation-ismobile{
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 100vw;
+  }
   &.no-chat {
     display: flex;
     justify-content: center;
@@ -30,7 +37,9 @@ interface HomeChatContainerProps {
 const HomeChatContainer = ({ windowWidth }: HomeChatContainerProps) => {
   const { data } = useContext(ChatContext);
   const result = data.chatId ? (
-    <ChatContainer>
+    <ChatContainer
+      className={windowWidth <= WIDTH ? "conversation-ismobile" : ""}
+    >
       <Header data={data.user} />
       <Messages />
       <InputBox />
