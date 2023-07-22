@@ -63,7 +63,9 @@ interface HomeSidebarContainerProps {
   isDisplaySidebar: boolean;
 }
 
-const HomeSidebarContainer = ({ isDisplaySidebar }: HomeSidebarContainerProps) => {
+const HomeSidebarContainer = ({
+  isDisplaySidebar,
+}: HomeSidebarContainerProps) => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
   const [searchResult, setSearchResult] = useState<UserType | null>(
@@ -94,29 +96,30 @@ const HomeSidebarContainer = ({ isDisplaySidebar }: HomeSidebarContainerProps) =
   }, [currentUser?.uid]);
 
   useEffect(() => {
+    const handleSearch = async () => {
+      const q = query(
+        collection(db, "users"),
+        where("lowercaseDisplayName", "==", keyword.toLowerCase())
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setSearchResult(keyword ? null : ({} as UserType));
+      }
+      querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        console.log(doc.id, " => ", doc.data());
+        setSearchResult(doc.data() as UserType);
+      });
+    };
+
+    //debounce search
     const getData = setTimeout(() => {
       handleSearch();
     }, 1000);
 
     return () => clearTimeout(getData);
   }, [keyword]);
-
-  const handleSearch = async () => {
-    const q = query(
-      collection(db, "users"),
-      where("lowercaseDisplayName", "==", keyword.toLowerCase())
-    );
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      setSearchResult(keyword ? null : ({} as UserType));
-    }
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      console.log(doc.id, " => ", doc.data());
-      setSearchResult(doc.data() as UserType);
-    });
-  };
 
   const combinedId = useMemo(() => {
     return currentUser && searchResult
@@ -177,16 +180,16 @@ const HomeSidebarContainer = ({ isDisplaySidebar }: HomeSidebarContainerProps) =
     dispatch({ type: "CHANGED_USER", payload: c });
   };
 
-  const updateLastMessageIsSeen = async (lastMessage: LastMessageType) => {
-    await updateDoc(doc(db, "userChats", currentUser?.uid || ""), {
-      [data.chatId + ".lastMessage"]: {
-        lastMessage: lastMessage.lastMessage,
-        senderId: lastMessage.senderId,
-        isSeen: true,
-      },
-    });
-  };
   useEffect(() => {
+    const updateLastMessageIsSeen = async (lastMessage: LastMessageType) => {
+      await updateDoc(doc(db, "userChats", currentUser?.uid || ""), {
+        [data.chatId + ".lastMessage"]: {
+          lastMessage: lastMessage.lastMessage,
+          senderId: lastMessage.senderId,
+          isSeen: true,
+        },
+      });
+    };
     //Nếu có tin nhắn đến mà focus vào messageInput thì cập nhật là đã xem
     if (
       chats.length &&
@@ -208,13 +211,13 @@ const HomeSidebarContainer = ({ isDisplaySidebar }: HomeSidebarContainerProps) =
     }
   }, [chats, data, conversation]);
 
-  const visibilityChange = () => {
-    conversationDispatch({
-      type: "UPDATE_IS_FOREGROUND",
-      payload: !document.hidden,
-    });
-  };
   useEffect(() => {
+    const visibilityChange = () => {
+      conversationDispatch({
+        type: "UPDATE_IS_FOREGROUND",
+        payload: !document.hidden,
+      });
+    };
     //Thay đổi web page's title khi đang duyệt trang khác mà có tin nhắn đến
     document.addEventListener("visibilitychange", visibilityChange);
     if (

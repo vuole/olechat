@@ -182,27 +182,28 @@ const InputBox = () => {
   };
 
   useEffect(() => {
-    messageInputRef.current?.focus();
+    if (width > WIDTH) {
+      messageInputRef.current?.focus();
+    }
   }, [data]);
 
-  const handlePastePhoto = (e: ClipboardEvent) => {
-    const pastedPhotoFile = e.clipboardData?.files[0];
-    if (
-      pastedPhotoFile &&
-      (pastedPhotoFile.type === "image/png" ||
-        pastedPhotoFile.type === "image/jpeg")
-    ) {
-      dispatch({
-        type: "EDITED_MESSAGE",
-        payload: {
-          textMessage,
-          photoMessage: e.clipboardData?.files[0],
-        },
-      });
-    }
-  };
-
   useEffect(() => {
+    const handlePastePhoto = (e: ClipboardEvent) => {
+      const pastedPhotoFile = e.clipboardData?.files[0];
+      if (
+        pastedPhotoFile &&
+        (pastedPhotoFile.type === "image/png" ||
+          pastedPhotoFile.type === "image/jpeg")
+      ) {
+        dispatch({
+          type: "EDITED_MESSAGE",
+          payload: {
+            textMessage,
+            photoMessage: e.clipboardData?.files[0],
+          },
+        });
+      }
+    };
     //lắng nghe mỗi khi người dùng paste data vào ô nhập tin nhắn thì gọi hàm xử lý
     //để chỉ lấy ra file ảnh
     messageInputRef.current?.addEventListener("paste", handlePastePhoto);
