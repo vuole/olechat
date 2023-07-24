@@ -15,6 +15,7 @@ const HomeContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: hidden;
 `;
 
 const HomeWrapper = styled.div`
@@ -23,7 +24,7 @@ const HomeWrapper = styled.div`
   width: 65%;
   height: 80%;
   display: flex;
-  /* overflow: hidden; */
+  overflow-y: hidden;
   &.full-view {
     height: 80%;
     width: 90%;
