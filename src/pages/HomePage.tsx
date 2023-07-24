@@ -16,6 +16,9 @@ const HomeContainer = styled.div`
   align-items: center;
   justify-content: center;
   overflow-y: hidden;
+  &.full-view {
+    align-items: flex-start;
+  }
 `;
 
 const HomeWrapper = styled.div`
@@ -26,7 +29,7 @@ const HomeWrapper = styled.div`
   display: flex;
   overflow-y: hidden;
   &.full-view {
-    height: 100%;
+    height: calc(100% - 55px);
     width: 100%;
     border-radius: 0;
   }
@@ -54,13 +57,15 @@ const HomePage = () => {
   const currentUser = useContext(AuthContext);
   const { conversation } = useContext(ConversationContext);
   const { data } = useContext(ChatContext);
+  const { width } = useWindowSize();
 
   const userId = useMemo(() => {
     return currentUser?.uid || "";
   }, [currentUser?.uid]);
-  const { width } = useWindowSize();
 
-  const isDisplaySidebar = (!data.chatId && width <= WIDTH) || width > WIDTH;
+  const isDisplaySidebar = useMemo(() => {
+    return (!data.chatId && width <= WIDTH) || width > WIDTH;
+  }, [data.chatId, width, WIDTH]);
 
   useEffect(() => {
     updateOnlineStatus(userId, "online");
@@ -75,7 +80,7 @@ const HomePage = () => {
   }, [userId, conversation.isForeground]);
 
   return (
-    <HomeContainer>
+    <HomeContainer className={width <= WIDTH ? "full-view" : ""}>
       <HomeWrapper className={width <= WIDTH ? "full-view" : ""}>
         <HomeSidebarContainer
           isDisplaySidebar={isDisplaySidebar}
