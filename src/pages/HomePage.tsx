@@ -26,8 +26,8 @@ const HomeWrapper = styled.div`
   display: flex;
   overflow-y: hidden;
   &.full-view {
-    height: 80%;
-    width: 90%;
+    height: 100%;
+    width: 100%;
     border-radius: 0;
   }
 `;
