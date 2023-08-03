@@ -4,19 +4,11 @@ import InputBox from "../components/Home/Conversation/InputBox";
 import Messages from "../components/Home/Conversation/Messages";
 import { ChatContext } from "../contexts/ChatContext";
 import { styled } from "styled-components";
-import { WIDTH } from "../pages/HomePage";
 
 const ChatContainer = styled.div`
   flex: 2;
   display: flex;
   flex-direction: column;
-  /* &.conversation-ismobile{
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100vh;
-    width: 100vw;
-  } */
   &.no-chat {
     display: flex;
     justify-content: center;
@@ -27,29 +19,24 @@ const ChatContainer = styled.div`
       font-size: 30px;
       text-align: center;
     }
+    @media screen and (max-width: 768px) {
+      display: none;
+    }
   }
 `;
 
-interface HomeChatContainerProps {
-  windowWidth: number;
-}
-
-const HomeChatContainer = ({ windowWidth }: HomeChatContainerProps) => {
+const HomeChatContainer = () => {
   const { data } = useContext(ChatContext);
   const result = data.chatId ? (
-    <ChatContainer
-      className={windowWidth <= WIDTH ? "conversation-ismobile" : ""}
-    >
+    <ChatContainer>
       <Header data={data.user} />
       <Messages />
       <InputBox />
     </ChatContainer>
   ) : (
-    (windowWidth > WIDTH && (
-      <ChatContainer className="no-chat">
-        <p>Choose a chat to start the conversation</p>
-      </ChatContainer>
-    )) || <></>
+    <ChatContainer className="no-chat">
+      <p>Choose a chat to start the conversation</p>
+    </ChatContainer>
   );
   return result;
 };

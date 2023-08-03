@@ -19,8 +19,7 @@ import Picker from "@emoji-mart/react";
 import emojiMartData from "@emoji-mart/data";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFaceSmile } from "@fortawesome/free-regular-svg-icons";
-import { useWindowSize } from "../../../core/hooks/useWindowSize";
-import { WIDTH } from "../../../pages/HomePage";
+import { faX } from "@fortawesome/free-solid-svg-icons";
 
 const InputWrapper = styled.div`
   display: flex;
@@ -31,35 +30,58 @@ const InputWrapper = styled.div`
 
 const Preview = styled.div`
   position: relative;
+  .preview-content {
+    margin: 10px 0 0 5px;
+  }
+
   img {
     width: 80px;
     height: 80px;
     object-fit: contain;
-    margin: 10px 0 0 5px;
   }
 
-  span {
+  .photo-close-button {
     position: absolute;
     top: 0;
     left: 3px;
     width: 20px;
     height: 20px;
     text-align: center;
-    line-height: 18px;
+    line-height: 17px;
     background-color: #3e4042;
     color: white;
     border-radius: 50%;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
     &:hover {
       background-color: #626568;
     }
+  }
+
+  .reply {
+    font-size: 13px;
+    color: #050505;
+    margin: 10px 15px 0 5px;
+  }
+
+  .reply-title span {
+    font-weight: 600;
+  }
+
+  .reply-close-button {
+    position: absolute;
+    right: 8px;
+    top: 10px;
+    color: "#52565b";
+    cursor: pointer;
   }
 `;
 
 const Input = styled.div`
   height: auto;
   background-color: white;
-  padding: 5px;
+  padding: 5px 5px 5px 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -101,7 +123,7 @@ const EmojiPickerWrapper = styled.div`
   right: 120px;
   z-index: 1000;
   bottom: 35px;
-  &.is-mobile {
+  @media screen and (max-width: 768px) {
     right: 10px;
     bottom: 45px;
   }
@@ -112,11 +134,12 @@ const InputBox = () => {
   const { data, dispatch } = useContext(ChatContext);
   const textMessage = data.messages[data.chatId]?.textMessage || "";
   const photoMessage = data.messages[data.chatId]?.photoMessage;
+  const repliedMessage = data.messages[data.chatId]?.repliedMessage;
   const [preview, setPreview] = useState<string | undefined>();
   const messageInputRef = useRef<HTMLInputElement>(null);
-  const { conversationDispatch } = useContext(ConversationContext);
+  const { conversation, conversationDispatch } =
+    useContext(ConversationContext);
   const [showEmojis, setShowEmojis] = useState(false);
-  const { width } = useWindowSize();
 
   const updateMessages = async (messageId: string, downloadURL?: string) => {
     const message = {
@@ -125,9 +148,12 @@ const InputBox = () => {
       senderId: currentUser?.uid,
       date: Timestamp.now(),
     };
+    const replyMessage = repliedMessage
+      ? { ...message, repliedMessage }
+      : message;
     await updateDoc(doc(db, "conversations", data.chatId), {
       messages: arrayUnion(
-        downloadURL ? { ...message, photoMessage: downloadURL } : message
+        downloadURL ? { ...replyMessage, photoMessage: downloadURL } : replyMessage
       ),
     });
   };
@@ -182,10 +208,10 @@ const InputBox = () => {
   };
 
   useEffect(() => {
-    if (width > WIDTH) {
+    if (conversation.isFocusMessageInput) {
       messageInputRef.current?.focus();
     }
-  }, [data]);
+  }, [conversation.isFocusMessageInput]);
 
   useEffect(() => {
     const handlePastePhoto = (e: ClipboardEvent) => {
@@ -240,7 +266,7 @@ const InputBox = () => {
   return (
     <InputWrapper>
       {showEmojis && (
-        <EmojiPickerWrapper className={width <= WIDTH ? "is-mobile" : ""}>
+        <EmojiPickerWrapper>
           <Picker
             data={emojiMartData}
             onEmojiSelect={addEmoji}
@@ -253,29 +279,64 @@ const InputBox = () => {
         </EmojiPickerWrapper>
       )}
 
-      {preview && (
-        <Preview>
-          <img src={preview} alt="previewPhoto" />
-          <span
-            onClick={() => {
-              dispatch({
-                type: "EDITED_MESSAGE",
-                payload: {
-                  textMessage,
-                  photoMessage: null,
-                },
-              });
-              setPreview(undefined);
-            }}
-          >
-            x
-          </span>
-        </Preview>
-      )}
+      <Preview>
+        {repliedMessage && (
+          <div className="reply">
+            <p className="reply-title">
+              Replying to{" "}
+              {repliedMessage?.senderId === currentUser?.uid ? (
+                "yourself"
+              ) : (
+                <span>{data.user.displayName}</span>
+              )}
+            </p>
+            <p style={{ color: "#65676B" }}>{repliedMessage?.textMessage}</p>
+            {repliedMessage?.photoMessage && (
+              <img
+                src={repliedMessage?.photoMessage}
+                alt="repliedPhoto"
+                style={{ marginTop: "5px" }}
+              />
+            )}
+            <FontAwesomeIcon
+              className="reply-close-button"
+              icon={faX}
+              size="xs"
+              onClick={() => {
+                dispatch({
+                  type: "EDITED_MESSAGE",
+                  payload: { repliedMessage: null },
+                });
+              }}
+            />
+          </div>
+        )}
+        {preview && (
+          <div style={{ position: "relative" }}>
+            <img src={preview} alt="previewPhoto" className="preview-content" />
+            <span
+              className="photo-close-button"
+              onClick={() => {
+                dispatch({
+                  type: "EDITED_MESSAGE",
+                  payload: {
+                    textMessage,
+                    photoMessage: null,
+                  },
+                });
+                setPreview(undefined);
+              }}
+            >
+              x
+            </span>
+          </div>
+        )}
+      </Preview>
+
       <Input>
         <input
           type="text"
-          placeholder="Aa"
+          placeholder="Write Message..."
           value={(textMessage as string) || ""}
           onKeyUp={(e) => handleSentMessage(e)}
           onChange={(e) => {

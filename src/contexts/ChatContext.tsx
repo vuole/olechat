@@ -1,5 +1,6 @@
 import { createContext, useReducer } from "react";
 import { UserInfo } from "../containers/HomeSidebarContainer";
+import { MessageType } from "../components/Home/Conversation/Messages";
 
 export const ChatContext = createContext<ChatContextType>(
   {} as ChatContextType
@@ -38,7 +39,7 @@ const chatReducer = (state: ChatUser, action: any) => {
         ...state,
         messages: {
           ...state.messages,
-          [state.chatId]: action.payload,
+          [state.chatId]: {...state.messages[state.chatId], ...action.payload},
         },
       };
 
@@ -68,7 +69,7 @@ interface ChatUser {
   user: UserInfo;
   lastMessage: LastMessageType;
   messages: {
-    [field: string]: { textMessage: string; photoMessage: File | null };
+    [field: string]: { textMessage: string; photoMessage: File | null; repliedMessage?: MessageType | null};
   };
 }
 

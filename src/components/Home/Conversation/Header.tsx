@@ -5,13 +5,14 @@ import styled from "styled-components";
 import { HeaderWrapper } from "../Sidebar/Header";
 import { UserInfo } from "../../../containers/HomeSidebarContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faArrowLeft, faCircle as solidFaCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faCircle as solidFaCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import { Timestamp } from "firebase/firestore";
 import { useContext, useEffect } from "react";
 import { ConversationContext } from "../../../contexts/ConversationContext";
-import { useWindowSize } from "../../../core/hooks/useWindowSize";
 import { ChatContext } from "../../../contexts/ChatContext";
-import { WIDTH } from "../../../pages/HomePage";
 
 const ChatIcons = styled.div`
   display: flex;
@@ -19,6 +20,31 @@ const ChatIcons = styled.div`
   img {
     height: 24px;
     cursor: pointer;
+  }
+`;
+
+const LeftHeader = styled.div`
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  .arrow-left-icon {
+    display: none;
+    margin-right: 8px;
+    margin-top: 2px;
+    cursor: pointer;
+    @media screen and (max-width: 768px) {
+      display: inline;
+    }
+  }
+  a {
+    color: lightgray;
+    text-decoration: none;
+  }
+  .online-icon {
+    width: 10px;
+    height: 10px;
+    margin-top: 3px;
   }
 `;
 
@@ -31,7 +57,6 @@ const Header = ({ data }: { data: UserInfo }) => {
   const { conversation, conversationDispatch } =
     useContext(ConversationContext);
   const { dispatch } = useContext(ChatContext);
-  const { width } = useWindowSize();
 
   useEffect(() => {
     return () => {
@@ -44,29 +69,19 @@ const Header = ({ data }: { data: UserInfo }) => {
 
   return (
     <HeaderWrapper style={{ backgroundColor: "#5d5b8d", color: "lightgray" }}>
-      <span
-        style={{
-          display: "flex",
-          gap: "3px",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {width <= WIDTH && (
-          <FontAwesomeIcon
-            onClick={() => {
-              dispatch({ type: "DELETED_USER" });
-            }}
-            icon={faArrowLeft}
-            size="sm"
-            style={{ marginRight: "8px", cursor: "pointer" }}
-          />
-        )}
-        <a href="#" style={{ color: "lightgray", textDecoration: "none" }}>
-          {data.displayName}
-        </a>
+      <LeftHeader>
+        <FontAwesomeIcon
+          className="arrow-left-icon"
+          onClick={() => {
+            dispatch({ type: "DELETED_USER" });
+          }}
+          icon={faArrowLeft}
+          size="sm"
+        />
+        <a href="#">{data.displayName}</a>
         {conversation.onlineStatus.state && (
           <FontAwesomeIcon
+            className="online-icon"
             icon={solidFaCircle}
             size="xs"
             style={{
@@ -74,12 +89,10 @@ const Header = ({ data }: { data: UserInfo }) => {
                 conversation.onlineStatus.state === "online"
                   ? "#00ff00"
                   : "#c0c0c0",
-              width: "10px",
-              height: "10px",
             }}
           />
         )}
-      </span>
+      </LeftHeader>
       <ChatIcons>
         {/* <img src={Cam} alt="" />
         <img src={Add} alt="" />

@@ -22,21 +22,11 @@ import { ChatContext, LastMessageType } from "../contexts/ChatContext";
 import { playSound } from "../components/Home/Conversation/Messages";
 import { ConversationContext } from "../contexts/ConversationContext";
 import { User } from "firebase/auth";
-import { WIDTH } from "../pages/HomePage";
 
-const SidebarContainer = styled.div`
+const SidebarContainer = styled.div<{ $isNoneSidebar: boolean }>`
   flex: 1;
   background-color: #3e3c61;
-  /* &.sidebar-ismobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-  } */
-  &.none {
-    display: none;
-  }
+  display: ${(props) => (props.$isNoneSidebar ? "none" : "block")};
 `;
 
 interface ChatType {
@@ -68,12 +58,10 @@ function flashTitle(pageTitle: string, newTitle: string) {
 
 interface HomeSidebarContainerProps {
   isDisplaySidebar: boolean;
-  windowWidth: number;
 }
 
 const HomeSidebarContainer = ({
   isDisplaySidebar,
-  windowWidth,
 }: HomeSidebarContainerProps) => {
   const currentUser = useContext(AuthContext);
   const [keyword, setKeyword] = useState("");
@@ -190,13 +178,9 @@ const HomeSidebarContainer = ({
   };
 
   useEffect(() => {
-    const updateLastMessageIsSeen = async (lastMessage: LastMessageType) => {
+    const updateLastMessageIsSeen = async () => {
       await updateDoc(doc(db, "userChats", currentUser?.uid || ""), {
-        [data.chatId + ".lastMessage"]: {
-          lastMessage: lastMessage.lastMessage,
-          senderId: lastMessage.senderId,
-          isSeen: true,
-        },
+        [data.chatId + ".lastMessage.isSeen"]: true,
       });
     };
     //Nếu có tin nhắn đến mà focus vào messageInput thì cập nhật là đã xem
@@ -207,7 +191,7 @@ const HomeSidebarContainer = ({
       chats[0][0] === data.chatId &&
       conversation.isFocusMessageInput
     ) {
-      updateLastMessageIsSeen(chats[0][1].lastMessage);
+      updateLastMessageIsSeen();
     }
     //Nếu có tin nhắn đến mà bấm chọn chat đấy thì cập nhật là đã xem
     if (
@@ -216,7 +200,7 @@ const HomeSidebarContainer = ({
       !data.lastMessage.isSeen
     ) {
       dispatch({ type: "IS_SEEN" });
-      updateLastMessageIsSeen(data.lastMessage);
+      updateLastMessageIsSeen();
     }
   }, [chats, data, conversation]);
 
@@ -255,11 +239,8 @@ const HomeSidebarContainer = ({
     }
   }, [chats]);
 
-  const none = !isDisplaySidebar ? "none" : "";
-  const sidebarIsMobile = windowWidth <= WIDTH ? "sidebar-ismobile" : "";
-
   return (
-    <SidebarContainer className={`${none} ${sidebarIsMobile}`}>
+    <SidebarContainer $isNoneSidebar={!isDisplaySidebar}>
       <Header />
       <Search
         value={keyword}

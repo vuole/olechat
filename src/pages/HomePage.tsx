@@ -16,8 +16,8 @@ const HomeContainer = styled.div`
   align-items: center;
   justify-content: center;
   overflow-y: hidden;
-  &.full-view {
-    align-items: flex-start;
+  @media screen and (max-width: 768px) {
+    /* align-items: flex-start; */
   }
 `;
 
@@ -28,9 +28,9 @@ const HomeWrapper = styled.div`
   height: 80%;
   display: flex;
   overflow-y: hidden;
-  &.full-view {
-    height: calc(100% - 55px);
-    width: 100%;
+  @media screen and (max-width: 768px) {
+    height: calc(100% - 110px);
+    width: 98%;
     border-radius: 0;
   }
 `;
@@ -80,13 +80,10 @@ const HomePage = () => {
   }, [userId, conversation.isForeground]);
 
   return (
-    <HomeContainer className={width <= WIDTH ? "full-view" : ""}>
-      <HomeWrapper className={width <= WIDTH ? "full-view" : ""}>
-        <HomeSidebarContainer
-          isDisplaySidebar={isDisplaySidebar}
-          windowWidth={width}
-        />
-        <HomeChatContainer windowWidth={width} />
+    <HomeContainer>
+      <HomeWrapper>
+        <HomeSidebarContainer isDisplaySidebar={isDisplaySidebar} />
+        <HomeChatContainer />
       </HomeWrapper>
     </HomeContainer>
   );
