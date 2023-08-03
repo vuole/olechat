@@ -34,6 +34,20 @@ const MessageContent = styled.div<{ $isMyOwnMessage: boolean }>`
     border-radius: 10px;
   }
 
+  @media screen and (max-width: 768px) {
+    max-width: ${(props) => (props.$isMyOwnMessage ? "70%" : "65%")};
+    .small-photo-message {
+      width: 180px;
+    }
+  }
+
+  @media screen and (max-width: 400px) {
+    max-width: ${(props) => (props.$isMyOwnMessage ? "60%" : "55%")};
+    .small-photo-message {
+      width: 150px;
+    }
+  }
+
   .reply-icon {
     display: none;
     color: #4a4a4e;
